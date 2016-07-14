@@ -4,6 +4,8 @@ Gulp + ES6 + babel.
 
 ## 如何快速使用
 
+[查看 demo](https://github.com/tangdaohai/event-entrust/tree/master/demo)
+
 #### html
 
     <div id="testDiv" data-event-fn-name='clickTest'>
@@ -46,7 +48,8 @@ event-entrust.js 获取到了 事件 后,会从触发事件的元素开始向上
 当查找到该 tag 后,便会调用 tag 对应的函数.
 
 ##### 注意
-> 不支持冒泡事件的事件类型,只能在触发元素的本身设置作用域
+> 不支持冒泡事件的事件类型,只能在触发元素的本身设置作用域<br>
+> 如 : focus，blur，change，submit，reset，select等不会冒泡的事件
 
 ## API
 
@@ -92,16 +95,19 @@ event-entrust.js 获取到了 事件 后,会从触发事件的元素开始向上
         * 函数配置对象.<br>
             Eg. <br>
 
-    `fns = {
-          checkName : function(event){
-              console.log(event.type);
-          },
-          checkPassword : function(event){
-              console.log(event.type);
-          }
-    }`
 
-    3.  option
+        fns = {
+              checkName : function(event){
+                  console.log(event.type);
+              },
+              checkPassword : function(event){
+                  console.log(event.type);
+              }
+        }
+
+
+
+   3.  option
         * Object
         * 可选
         * 选项配置,与 entrust.config 可配置项一致. 只不过此参数只影响本次调用.优先级大于 entrust.config 的设置.
