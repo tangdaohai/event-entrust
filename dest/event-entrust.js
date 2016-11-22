@@ -1,21 +1,19 @@
-"use strict";
-
 /**
  * event-entrust JavaScript Library v1.0.0
  * https://github.com/tangdaohai/event-entrust
  */
-(function () {
+(function(){
 
     var defaults = {
         //事件名称属性, 当触发事件时, 会寻找含有此属性的元素
-        tag: "data-event-fn-name",
+        tag : "data-event-fn-name",
         //默认的事件绑定范围
-        defaultSelector: document,
+        defaultSelector : document,
         //默认 false.绑定事件 捕获 或者 冒泡。 true : 捕获, false : 冒泡
-        type: false
+        type : false
     };
 
-    function entrust() {}
+    var entrust = {};
 
     entrust.version = "1.0.0";
 
@@ -24,8 +22,8 @@
      * @param name
      * @param value
      */
-    entrust.config = function (name, value) {
-        return defaults[name] = value;
+    entrust.config = function(name, value){
+        return defaults[name] = value
     };
 
     /**
@@ -34,72 +32,60 @@
      * @param fns       事件配置函数
      * @param option    配置选项
      */
-    entrust.on = function (action) {
-        var fns = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-        var option = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+    entrust.on = function( action, fns, option){
 
+        fns = fns || {};
+        option = option || {};
 
         var selector = option.selector || defaults.defaultSelector,
             type = option.type || defaults.type,
             tag = option.tag || defaults.tag;
 
         //指定要绑定的事件
-        var bindTarget = void 0;
+        var bindTarget;
 
         //获取要绑定的事件的元素
-        if (selector instanceof Node) {
+        if( selector instanceof Node){
             //selector 是一个节点元素
             bindTarget = selector;
-        } else if (typeof selector === "string") {
+        }else if(typeof selector === "string"){
             //selector 是一个字符串选择器
 
             //优先使用 jQuery 的选择器
-            if (typeof $ !== "undefined") {
+            if(typeof $ !== "undefined"){
                 bindTarget = $(selector)[0];
-            } else {
+            }else{
                 bindTarget = document.querySelector(selector);
             }
-        } else {
-            throw new TypeError(selector + " : Don't support this type of parameter");
+
+        }else{
+            throw new TypeError(selector + ": Don't support this type of parameter");
         }
 
-        if (!bindTarget) {
+        if(!bindTarget){
             throw new Error(selector + " Not Found.");
         }
 
         //按 逗号 空格 冒号拆分
         action = action.split(/,|\s|:/g);
 
+        //迭代绑定事件
+        action.forEach(function(ac){
+            //先移除
+            EventUtil.removeEvent(bindTarget, ac, _callback);
+            //再绑定
+            EventUtil.addEvent(bindTarget, ac, _callback, type);
+        });
+
         //迭代 事件类型
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
-
-        try {
-            for (var _iterator = action.values()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                var val = _step.value;
-
-                //先移除
-                EventUtil.removeEvent(bindTarget, val, _callback);
-                //再绑定
-                EventUtil.addEvent(bindTarget, val, _callback, type);
-            }
-        } catch (err) {
-            _didIteratorError = true;
-            _iteratorError = err;
-        } finally {
-            try {
-                if (!_iteratorNormalCompletion && _iterator.return) {
-                    _iterator.return();
-                }
-            } finally {
-                if (_didIteratorError) {
-                    throw _iteratorError;
-                }
-            }
+        for(var i = 0, length = action.length; i < length; i++){
+            //先移除
+            EventUtil.removeEvent(bindTarget, action[i], _callback);
+            //再绑定
+            EventUtil.addEvent(bindTarget, action[i], _callback, type);
         }
 
-        function _callback(event) {
+        function _callback(event){
             event = EventUtil.getEvent(event);
             //触发事件的目标元素.
             var target = EventUtil.getTarget(event);
@@ -107,15 +93,15 @@
             //查找有指定 函数名称 的元素
             var fnElem = EventUtil.findBindFnElem(target, tag, bindTarget);
 
-            if (fnElem) {
+            if(fnElem){
                 var name = fnElem.getAttribute(tag);
 
                 //如果配置 name 是一个 json
-                if (/^{.*}$/.test(name)) {
+                if(/^{.*}$/.test(name)){
                     //获取对应的事件类型的函数名称
-                    try {
+                    try{
                         name = JSON.parse(name)[event.type];
-                    } catch (e) {
+                    }catch(e){
                         throw new SyntaxError("Unexpected token " + name + " in JSON");
                     }
                 }
@@ -141,49 +127,44 @@
          * @param fn        触发后的函数
          * @param type      捕获或者冒泡
          */
-
-        addEvent: function addEvent(element, action, fn, type) {
-            if (element.addEventListener) {
+        addEvent: function(element, action, fn, type){
+            if(element.addEventListener){
                 element.addEventListener(action, fn, type);
-            } else if (element.attachEvent) {
+            }else if(element.attachEvent){
                 element.attachEvent("on" + action, fn);
-            } else {
+            }else {
                 throw new Error("bind event failed. Browser version is too low");
             }
         },
-
         /**
          * 解除事件
          * @param element
          * @param action
          * @param fn
          */
-        removeEvent: function removeEvent(element, action, fn) {
-            if (element.removeEventListener) {
+        removeEvent: function(element, action, fn) {
+            if(element.removeEventListener){
                 element.removeEventListener(action, fn);
-            } else if (element.detachEvent) {
+            }else if(element.detachEvent){
                 element.detachEvent("on" + action, fn);
             }
         },
-
         /**
          * 获取 event
          * @param event
          * @returns {*|Event}
          */
-        getEvent: function getEvent(event) {
+        getEvent: function(event){
             return event || window.event;
         },
-
         /**
          * 获取 触发事件的目标元素
          * @param event
          * @returns {Node|string|EventTarget|*|Object}
          */
-        getTarget: function getTarget(event) {
+        getTarget: function(event){
             return event.target || event.srcElement;
         },
-
         /**
          * 查找含有 defaults.tag 属性的元素
          * 若本身元素没有, 指定到父级元素递归查找.
@@ -192,20 +173,21 @@
          * @param range     代理事件的元素
          * @returns {*}
          */
-        findBindFnElem: function findBindFnElem(element, tag, range) {
+        findBindFnElem: function(element, tag, range){
 
-            if (element.getAttribute && element.getAttribute(tag) !== null) {
+            if(element.getAttribute && element.getAttribute(tag) !== null){
                 //有查找到 tag, 返回这个元素.
                 return element;
             }
 
             //查到到达绑定事件的范围上限了， 不再查找了。
-            if (element === range) {
+            if(element === range){
                 return null;
             }
 
             //继续迭代查找
             return this.findBindFnElem(element.parentNode, tag, range);
+
         }
     };
 

@@ -4,7 +4,7 @@
  */
 (function(){
 
-    let defaults = {
+    var defaults = {
         //事件名称属性, 当触发事件时, 会寻找含有此属性的元素
         tag : "data-event-fn-name",
         //默认的事件绑定范围
@@ -13,8 +13,7 @@
         type : false
     };
 
-    function entrust(){
-    }
+    var entrust = {};
 
     entrust.version = "1.0.0";
 
@@ -23,7 +22,9 @@
      * @param name
      * @param value
      */
-    entrust.config = (name, value) =>  defaults[name] = value;
+    entrust.config = function(name, value){
+        return defaults[name] = value
+    };
 
     /**
      * 绑定事件
@@ -31,14 +32,17 @@
      * @param fns       事件配置函数
      * @param option    配置选项
      */
-    entrust.on = ( action, fns = {}, option = {} ) => {
+    entrust.on = function( action, fns, option){
 
-        let selector = option.selector || defaults.defaultSelector,
+        fns = fns || {};
+        option = option || {};
+
+        var selector = option.selector || defaults.defaultSelector,
             type = option.type || defaults.type,
             tag = option.tag || defaults.tag;
 
         //指定要绑定的事件
-        let bindTarget;
+        var bindTarget;
 
         //获取要绑定的事件的元素
         if( selector instanceof Node){
@@ -55,7 +59,7 @@
             }
 
         }else{
-            throw new TypeError(`${ selector } : Don't support this type of parameter`);
+            throw new TypeError(selector + ": Don't support this type of parameter");
         }
 
         if(!bindTarget){
@@ -65,24 +69,32 @@
         //按 逗号 空格 冒号拆分
         action = action.split(/,|\s|:/g);
 
-        //迭代 事件类型
-        for(let val of action.values()){
+        //迭代绑定事件
+        action.forEach(function(ac){
             //先移除
-            EventUtil.removeEvent(bindTarget, val, _callback);
+            EventUtil.removeEvent(bindTarget, ac, _callback);
             //再绑定
-            EventUtil.addEvent(bindTarget, val, _callback, type);
+            EventUtil.addEvent(bindTarget, ac, _callback, type);
+        });
+
+        //迭代 事件类型
+        for(var i = 0, length = action.length; i < length; i++){
+            //先移除
+            EventUtil.removeEvent(bindTarget, action[i], _callback);
+            //再绑定
+            EventUtil.addEvent(bindTarget, action[i], _callback, type);
         }
 
         function _callback(event){
             event = EventUtil.getEvent(event);
             //触发事件的目标元素.
-            let target = EventUtil.getTarget(event);
+            var target = EventUtil.getTarget(event);
 
             //查找有指定 函数名称 的元素
-            let fnElem = EventUtil.findBindFnElem(target, tag, bindTarget);
+            var fnElem = EventUtil.findBindFnElem(target, tag, bindTarget);
 
             if(fnElem){
-                let name = fnElem.getAttribute(tag);
+                var name = fnElem.getAttribute(tag);
 
                 //如果配置 name 是一个 json
                 if(/^{.*}$/.test(name)){
@@ -95,7 +107,7 @@
                 }
 
                 //要执行的函数
-                let fn = fns[name];
+                var fn = fns[name];
 
                 /**
                  * 如果是一个函数,就执行它.
@@ -107,7 +119,7 @@
         }
     };
 
-    let EventUtil = {
+    var EventUtil = {
         /**
          * 绑定事件
          * @param element   指定的元素
@@ -115,7 +127,7 @@
          * @param fn        触发后的函数
          * @param type      捕获或者冒泡
          */
-        addEvent (element, action, fn, type){
+        addEvent: function(element, action, fn, type){
             if(element.addEventListener){
                 element.addEventListener(action, fn, type);
             }else if(element.attachEvent){
@@ -130,7 +142,7 @@
          * @param action
          * @param fn
          */
-        removeEvent (element, action, fn) {
+        removeEvent: function(element, action, fn) {
             if(element.removeEventListener){
                 element.removeEventListener(action, fn);
             }else if(element.detachEvent){
@@ -142,7 +154,7 @@
          * @param event
          * @returns {*|Event}
          */
-        getEvent (event){
+        getEvent: function(event){
             return event || window.event;
         },
         /**
@@ -150,7 +162,7 @@
          * @param event
          * @returns {Node|string|EventTarget|*|Object}
          */
-        getTarget (event){
+        getTarget: function(event){
             return event.target || event.srcElement;
         },
         /**
@@ -161,7 +173,7 @@
          * @param range     代理事件的元素
          * @returns {*}
          */
-        findBindFnElem (element, tag, range){
+        findBindFnElem: function(element, tag, range){
 
             if(element.getAttribute && element.getAttribute(tag) !== null){
                 //有查找到 tag, 返回这个元素.

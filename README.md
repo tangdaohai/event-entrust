@@ -1,7 +1,6 @@
 event-entrust.js
 ===============
-Gulp + ES6 + babel.
-
+兼容性支持 es5 的浏览器, 因为用到了 es5 的事件代理特性.
 ## 如何快速使用
 
 [查看 demo](https://github.com/tangdaohai/event-entrust/tree/master/demo)
