@@ -3,10 +3,11 @@ event-entrust.js
 兼容性支持 es5 的浏览器, 因为用到了 es5 的事件代理特性.
 ## 如何快速使用
 
-[查看 demo](https://github.com/tangdaohai/event-entrust/tree/master/demo)
+[查看 demo](https://tangdaohai.github.io/event-entrust/)
 
 #### html
 
+```html
     <div id="testDiv" data-event-fn-name='clickTest'>
         <button>Button</button>
         <input type="text">
@@ -14,8 +15,11 @@ event-entrust.js
 
     <script src="../dest/event-entrust.js"></script>
     <script src="demo.js"></script>
+```
 
 ### js
+
+```javascript
 
     //配置函数对象
     var fns = {
@@ -34,6 +38,8 @@ event-entrust.js
     }
 
     entrust.on("click", fns);
+
+```
 
 * 在 div#testDiv 元素上绑定了 data-event-fn 自定义属性(data-event-fn = clickTest).<br>
 * 然后使用 entrust.on 绑定一个 click 事件。<br>
@@ -92,18 +98,20 @@ event-entrust.js 获取到了 事件 后,会从触发事件的元素开始向上
         * Object
         * 必须传递
         * 函数配置对象.<br>
-            Eg. <br>
+            Eg.
 
+        ```javascript
 
-        fns = {
-              checkName : function(event){
-                  console.log(event.type);
-              },
-              checkPassword : function(event){
-                  console.log(event.type);
-              }
-        }
+            fns = {
+                  checkName : function(event){
+                      console.log(event.type);
+                  },
+                  checkPassword : function(event){
+                      console.log(event.type);
+                  }
+            }
 
+        ```
 
 
    3.  option
